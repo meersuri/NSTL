@@ -18,7 +18,7 @@ enable_testing()
 
 add_executable(
     vector_runner
-    vector_runner.cc
+    src/vector_runner.cc
     )
 
 add_executable(

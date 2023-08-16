@@ -16,6 +16,30 @@ TEST(InitTest, SizeConstructorWorks) {
         EXPECT_EQ(v[i], 0);
 }
 
+TEST(InitTest, CopyConstructorWorks) {
+    nstd::vector<int> v(7, -2);
+    nstd::vector<int> v2(v);
+    ASSERT_EQ(v2.size(), v.size());
+    ASSERT_EQ(v2.capacity(), v.capacity());
+    for (int i = 0; i < 7; ++i)
+        ASSERT_EQ(v[i], v2[i]);
+    for (int i = 0; i < 7; ++i) {
+        v2[i] = i;
+        ASSERT_EQ(v2[i], i);
+        ASSERT_EQ(v[i], -2);
+    }
+}
+
+TEST(InitTest, MoveConstructorWorks) {
+    nstd::vector<int> v(7, -2);
+    nstd::vector<int> v2(std::move(v));
+    ASSERT_EQ(v.size(), 0);
+    ASSERT_EQ(v.capacity(), 0);
+    ASSERT_EQ(v2.size(), 7);
+    for (int i = 0; i < 7; ++i)
+        ASSERT_EQ(v2[i], -2);
+}
+
 TEST(VectorTest, AppendToEmptyVectorWorks) {
     nstd::vector<char> v;
     v.append('a');

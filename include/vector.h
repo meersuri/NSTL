@@ -17,6 +17,8 @@ class vector {
         vector<T>(): _size(0), _capacity(1),  _data(nullptr) { _data = std::make_unique<T[]>(1); }
         vector<T>(size_t n): _size(n), _capacity(n), _data(nullptr) { _data = std::make_unique<T[]>(n); }
         vector<T>(size_t n, const T &item);
+        vector<T>(const vector<T> &other);
+        vector<T>(vector<T> &&other) noexcept;
         void append(const T &item);
         size_t size() const { return _size; }
         size_t capacity() const { return _capacity; }
@@ -78,6 +80,20 @@ T& nstd::vector<T>::_index_op(int idx) const {
         throw std::out_of_range(ss.str());
     }
     return _data[idx];
+}
+
+template<typename T>
+nstd::vector<T>::vector(const vector<T> &other): _size(other._size), _capacity(other._capacity), _data(nullptr) {
+    _data = std::make_unique<T[]>(_capacity);
+    std::copy(other._data.get(), other._data.get() + other._capacity, _data.get());
+}
+
+template<typename T>
+nstd::vector<T>::vector(vector<T> &&other) noexcept: _size(other._size), _capacity(other._capacity), _data(nullptr) {
+    _data = std::move(other._data);
+    other._data = nullptr;
+    other._size = 0;
+    other._capacity = 0;
 }
 
 template<typename T>

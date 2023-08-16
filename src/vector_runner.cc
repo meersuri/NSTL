@@ -13,5 +13,6 @@ int main() {
     std::cout << vec2;
     int idx = 0;
     std::cout << vec2[idx];
+    nstd::vector<int> vec3(vec2);
     return 0;
 }

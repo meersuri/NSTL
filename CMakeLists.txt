@@ -17,22 +17,22 @@ FetchContent_Declare(
 enable_testing()
 
 add_executable(
-    vector_runner
-    src/vector_runner.cc
-    )
-
-add_executable(
     vector_test
     src/vector_test.cc
     )
 
-target_include_directories(
-    vector_runner PUBLIC
-    include/
+add_executable(
+    node_test
+    src/node_test.cc
     )
 
 target_include_directories(
     vector_test PUBLIC
+    include/
+    )
+
+target_include_directories(
+    node_test PUBLIC
     include/
     )
 
@@ -41,5 +41,11 @@ target_link_libraries(
     GTest::gtest_main
     )
 
+target_link_libraries(
+    node_test
+    GTest::gtest_main
+    )
+
 include(GoogleTest)
 gtest_discover_tests(vector_test)
+gtest_discover_tests(node_test)

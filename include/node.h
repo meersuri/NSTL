@@ -15,8 +15,8 @@ class list_node {
         list_node<T>& operator=(list_node<T>&& other) = default;
         const T& data() const { return data_; }
         T& data() { return data_; }
-        const list_node<T>* next() { return next_; }
-        const list_node<T>* prev() { return prev_; }
+        list_node<T>* next() const { return next_; }
+        list_node<T>* prev() const { return prev_; }
         void next(list_node<T>* node) { next_ = node; }
         void prev(list_node<T>* node) { prev_ = node; }
     private:

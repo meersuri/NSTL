@@ -1,3 +1,3 @@
 cmake -S . -B build
 cmake --build build
-cd build && ctest
+cd build && ctest --output-on-failure

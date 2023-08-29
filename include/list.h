@@ -16,6 +16,7 @@ class list {
         ~list<T>();
         void append(const T& data);
         T& pop();
+        T& pop_left();
         size_t size() { return size_;}
         const T& front() const { return get_front(); }
         T& front() { return get_front(); }
@@ -96,6 +97,25 @@ T& list<T>::pop() {
     tail_->prev(second_last);
     size_--;
     return last->data();
+}
+
+template <typename T>
+T& list<T>::pop_left() {
+    if (head_->next() == tail_)
+        throw std::runtime_error("Pop from empty list");
+    if (head_->next()->next() == tail_) {
+        auto node = head_->next();
+        head_->next(tail_);
+        tail_->prev(head_);
+        size_--;
+        return node->data();
+    }
+    auto first = head_->next();
+    auto second = first->next();
+    second->prev(head_);
+    head_->next(second);
+    size_--;
+    return first->data();
 }
 
 } // namespace nstd

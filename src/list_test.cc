@@ -57,3 +57,23 @@ TEST(RemoveElementTests, PopWorks) {
     ASSERT_EQ(list.size(), 0);
     ASSERT_EQ(data, 1);
 }
+
+TEST(RemoveElementTests, PopLeftWorksForSingleElement) {
+    nstd::list<int> list;
+    list.append(1);
+    auto data = list.pop_left();
+    ASSERT_EQ(list.size(), 0);
+    ASSERT_EQ(data, 1);
+}
+
+TEST(RemoveElementTests, PopLeftWorks) {
+    nstd::list<int> list;
+    list.append(1);
+    list.append(2);
+    auto data = list.pop_left();
+    ASSERT_EQ(list.size(), 1);
+    ASSERT_EQ(data, 1);
+    data = list.pop_left();
+    ASSERT_EQ(list.size(), 0);
+    ASSERT_EQ(data, 2);
+}

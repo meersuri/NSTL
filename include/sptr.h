@@ -14,16 +14,27 @@ class sptr {
         sptr& operator=(sptr&& other);
         T& operator*();
         ~sptr();
+        int ref_count();
     private:
         T* raw_ptr_;
         int* ref_count_;
 };
 
 template <typename T>
+int sptr<T>::ref_count() {
+    if (ref_count_ == nullptr) {
+        return 0;
+    }
+    return *ref_count_;
+}
+
+template <typename T>
 sptr<T>& sptr<T>::operator=(const sptr& other) {
     if (&other != this) {
-        (*ref_count_)--;
-        if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
+        if (ref_count_ != nullptr && *ref_count_ > 0) {
+            (*ref_count_)--;
+        }
+        if (ref_count_ != nullptr && *ref_count_ == 0 && raw_ptr_ != nullptr) {
             delete raw_ptr_;
             raw_ptr_ = nullptr;
         }
@@ -35,7 +46,7 @@ sptr<T>& sptr<T>::operator=(const sptr& other) {
 }
 
 template <typename T>
-sptr<T>::sptr(const sptr& other) {
+sptr<T>::sptr(const sptr& other): raw_ptr_(nullptr), ref_count_(nullptr) {
     *this = other;
 }
 

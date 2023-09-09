@@ -7,25 +7,35 @@ template <typename T>
 class sptr {
     public:
         sptr(): raw_ptr_(nullptr), ref_count_(nullptr) {}
-        sptr(T* ptr): raw_ptr_(ptr), ref_count_(nullptr) { ref_count_ = new int{1}; }
+        explicit sptr(T* ptr);
         sptr(const sptr& other);
         sptr& operator=(const sptr& other);
         sptr(sptr&& other) noexcept;
-        sptr& operator=(sptr&& other);
+        sptr& operator=(sptr<T>&& other);
+        bool operator==(const sptr& other) const;
+        bool operator==(std::nullptr_t) const { return raw_ptr_ == nullptr && ref_count_ == nullptr;}
         T& operator*();
         ~sptr();
-        int ref_count();
+        int ref_count() const;
+        T* get() { return raw_ptr_; }
+        const T* get() const { return raw_ptr_; }
     private:
         T* raw_ptr_;
         int* ref_count_;
 };
 
 template <typename T>
-int sptr<T>::ref_count() {
+int sptr<T>::ref_count() const {
     if (ref_count_ == nullptr) {
         return 0;
     }
     return *ref_count_;
+}
+
+
+template <typename T>
+inline bool sptr<T>::operator==(const sptr& other) const {
+    return (raw_ptr_ == other.get() && ref_count() == other.ref_count());
 }
 
 template <typename T>
@@ -33,14 +43,16 @@ sptr<T>& sptr<T>::operator=(const sptr& other) {
     if (&other != this) {
         if (ref_count_ != nullptr && *ref_count_ > 0) {
             (*ref_count_)--;
-        }
-        if (ref_count_ != nullptr && *ref_count_ == 0 && raw_ptr_ != nullptr) {
-            delete raw_ptr_;
-            raw_ptr_ = nullptr;
+            if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
+                delete raw_ptr_;
+                raw_ptr_ = nullptr;
+            }
         }
         raw_ptr_ = other.raw_ptr_;
         ref_count_ = other.ref_count_;
-        (*ref_count_)++;
+        if (ref_count_ != nullptr) {
+            (*ref_count_)++;
+        }
     }
     return *this;
 }
@@ -51,12 +63,21 @@ sptr<T>::sptr(const sptr& other): raw_ptr_(nullptr), ref_count_(nullptr) {
 }
 
 template <typename T>
-sptr<T>& sptr<T>::operator=(sptr&& other) {
+inline sptr<T>::sptr(T* p): raw_ptr_(p), ref_count_(nullptr) {
+    if (p != nullptr) {
+        ref_count_ = new int{1};
+    }
+}
+
+template <typename T>
+sptr<T>& sptr<T>::operator=(sptr&& other){
     if (&other != this) {
-        (*ref_count_)--;
-        if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
-            delete raw_ptr_;
-            raw_ptr_ = nullptr;
+        if (ref_count_ != nullptr && *ref_count_ > 0) {
+            (*ref_count_)--;
+            if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
+                delete raw_ptr_;
+                raw_ptr_ = nullptr;
+            }
         }
         raw_ptr_ = other.raw_ptr_;
         ref_count_ = other.ref_count_;
@@ -67,7 +88,7 @@ sptr<T>& sptr<T>::operator=(sptr&& other) {
 }
 
 template <typename T>
-sptr<T>::sptr(sptr&& other) noexcept {
+sptr<T>::sptr(sptr&& other) noexcept: raw_ptr_(nullptr), ref_count_(nullptr){
     *this = std::move(other);
 }
 
@@ -78,10 +99,15 @@ T& sptr<T>::operator*() {
 
 template <typename T>
 sptr<T>::~sptr() {
-    (*ref_count_)--;
-    if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
-        delete raw_ptr_;
-        raw_ptr_ = nullptr;
+    if (raw_ptr_ == nullptr) {
+        return;
+    }
+    if (ref_count_ != nullptr && *ref_count_ > 0) {
+        (*ref_count_)--;
+        if (*ref_count_ == 0 && raw_ptr_ != nullptr) {
+            delete raw_ptr_;
+            raw_ptr_ = nullptr;
+        }
     }
 }
 

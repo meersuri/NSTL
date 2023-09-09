@@ -34,3 +34,24 @@ TEST(InitTests, CopyAssignmentWorks) {
     ASSERT_EQ(p3.ref_count(), 2);
 }
 
+TEST(APITests, EqualsWorks) {
+    nstd::sptr<int> p = nstd::make_sptr<int>(5);
+    nstd::sptr<int> p2(p);
+    ASSERT_EQ(p2, p);
+}
+
+TEST(APITests, EqualsWorksWIthNullptr) {
+    nstd::sptr<int> p;
+    nstd::sptr<int> p2(p);
+    ASSERT_EQ(p2, nullptr);
+}
+
+TEST(InitTests, MoveConstructorWorks) {
+    nstd::sptr<int> p = nstd::make_sptr<int>(5);
+    nstd::sptr<int> p2(std::move(p));
+    ASSERT_EQ(*p2, 5);
+    ASSERT_EQ(p2.ref_count(), 1);
+    ASSERT_EQ(p, nullptr);
+    ASSERT_EQ(p.ref_count(), 0);
+}
+

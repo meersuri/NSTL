@@ -15,6 +15,7 @@ class sptr {
         bool operator==(const sptr& other) const;
         bool operator==(std::nullptr_t) const { return raw_ptr_ == nullptr && ref_count_ == nullptr;}
         T& operator*();
+        T* operator->();
         ~sptr();
         int ref_count() const;
         T* get() { return raw_ptr_; }
@@ -100,6 +101,11 @@ sptr<T>::sptr(sptr&& other) noexcept: raw_ptr_(nullptr), ref_count_(nullptr){
 template <typename T>
 T& sptr<T>::operator*() {
     return *raw_ptr_;
+}
+
+template <typename T>
+T* sptr<T>::operator->() {
+    return raw_ptr_;
 }
 
 template <typename T>

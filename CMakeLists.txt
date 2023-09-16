@@ -35,6 +35,11 @@ add_executable(
     sptr_test
     src/sptr_test.cc
     )
+    
+add_executable(
+    uptr_test
+    src/uptr_test.cc
+    )
 
 target_include_directories(
     vector_test PUBLIC
@@ -53,6 +58,11 @@ target_include_directories(
 
 target_include_directories(
     sptr_test PUBLIC
+    include/
+    )
+
+target_include_directories(
+    uptr_test PUBLIC
     include/
     )
 
@@ -76,8 +86,14 @@ target_link_libraries(
     GTest::gtest_main
     )
 
+target_link_libraries(
+    uptr_test
+    GTest::gtest_main
+    )
+
 include(GoogleTest)
 gtest_discover_tests(vector_test)
 gtest_discover_tests(node_test)
 gtest_discover_tests(list_test)
 gtest_discover_tests(sptr_test)
+gtest_discover_tests(uptr_test)

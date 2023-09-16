@@ -52,23 +52,34 @@ uptr<T>::~uptr() {
     }
 }
 
+template <typename T>
+inline void ensure_alloc(T* raw_ptr) {
+    if (raw_ptr == nullptr) {
+        throw std::runtime_error("Call to new returned a nullptr");
+    }
+}
+
 template <typename T, typename... Args>
 auto make_uptr(Args&&... args) {
     if constexpr(!std::is_array_v<T>) {
         T* raw_ptr = new T(std::forward<Args>(args)...);
-        if (raw_ptr == nullptr) {
-            throw std::runtime_error("Failed to new in make_uptr");
-        }
+        ensure_alloc(raw_ptr);
         return uptr<T>(raw_ptr);
     }
     else {
-        auto raw_ptr = new std::remove_extent_t<T>[] {args...};
-        if (raw_ptr == nullptr) {
-            throw std::runtime_error("Failed to new in make_uptr");
+        if (sizeof...(args) > 0) {
+            auto raw_ptr = new std::remove_extent_t<T>[] {args...};
+            ensure_alloc(raw_ptr);
+            return uptr<std::remove_extent_t<T>>(raw_ptr, true);
         }
-        return uptr<std::remove_extent_t<T>>(raw_ptr, true);
+        else {
+            auto raw_ptr = new std::remove_extent_t<T>[std::extent_v<T>];
+            ensure_alloc(raw_ptr);
+            return uptr<std::remove_extent_t<T>>(raw_ptr, true);
+            }
     }
 }
+
 
 } // namespace nstd
 

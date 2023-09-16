@@ -38,10 +38,18 @@ TEST(InitTests, MakeUptrIntArrayWorks) {
 }
 
 struct TestObj {
-    int data;
+    int data{7};
+    TestObj() = default;
     TestObj(int val): data(val) {}
     int test() { return data; }
 };
+
+TEST(InitTests, MakeUptrTArrayWorks) {
+    auto p = nstd::make_uptr<TestObj[3]>();
+    ASSERT_EQ(p.get()[0].test(), 7);
+    ASSERT_EQ(p.get()[1].test(), 7);
+    ASSERT_EQ(p.get()[2].test(), 7);
+}
 
 TEST(InitTests, MemberAccessWorks) {
     auto p = nstd::make_uptr<TestObj>(5);

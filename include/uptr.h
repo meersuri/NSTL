@@ -7,7 +7,8 @@ template <typename T>
 class uptr {
     public:
         uptr(): raw_ptr_(nullptr) {}
-        uptr(T* raw_ptr): raw_ptr_(raw_ptr) {} 
+        uptr(T* raw_ptr): raw_ptr_(raw_ptr) {}
+        uptr(T* raw_ptr, bool is_array): raw_ptr_(raw_ptr), is_array_(is_array) {}
         uptr(const uptr<T>& other) = delete;
         uptr<T> operator=(const uptr<T>& other) = delete;
         uptr(uptr<T>&& other);
@@ -20,6 +21,7 @@ class uptr {
         const T* get() const { return raw_ptr_; }
     private:
         T* raw_ptr_;
+        bool is_array_{false};
 };
 
 template <typename T>
@@ -40,19 +42,32 @@ uptr<T>& uptr<T>::operator=(uptr<T>&& other) {
 template <typename T>
 uptr<T>::~uptr() {
     if (raw_ptr_ != nullptr) {
-        delete raw_ptr_;
+        if (!is_array_) {
+            delete raw_ptr_;
+        }
+        else {
+            delete[] raw_ptr_;
+        }
         raw_ptr_ = nullptr;
     }
 }
 
 template <typename T, typename... Args>
-uptr<T> make_uptr(Args&&... args) {
-    static_assert(!std::is_array_v<T>, "T[] not supported");
-    T* raw_ptr = new T(std::forward<Args>(args)...);
-    if (raw_ptr == nullptr) {
-        throw std::runtime_error("Failed to new in make_uptr");
+auto make_uptr(Args&&... args) {
+    if constexpr(!std::is_array_v<T>) {
+        T* raw_ptr = new T(std::forward<Args>(args)...);
+        if (raw_ptr == nullptr) {
+            throw std::runtime_error("Failed to new in make_uptr");
+        }
+        return uptr<T>(raw_ptr);
     }
-    return uptr<T>(raw_ptr);
+    else {
+        auto raw_ptr = new std::remove_extent_t<T>[] {args...};
+        if (raw_ptr == nullptr) {
+            throw std::runtime_error("Failed to new in make_uptr");
+        }
+        return uptr<std::remove_extent_t<T>>(raw_ptr, true);
+    }
 }
 
 } // namespace nstd

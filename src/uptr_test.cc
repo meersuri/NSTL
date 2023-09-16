@@ -29,6 +29,14 @@ TEST(InitTests, MakeUptrIntWorks) {
     ASSERT_EQ(*p, 3);
 }
 
+TEST(InitTests, MakeUptrIntArrayWorks) {
+    auto p = nstd::make_uptr<int[]>(3,4,5);
+    ASSERT_EQ(*p, 3);
+    ASSERT_EQ(p.get()[0], 3);
+    ASSERT_EQ(p.get()[1], 4);
+    ASSERT_EQ(p.get()[2], 5);
+}
+
 struct TestObj {
     int data;
     TestObj(int val): data(val) {}

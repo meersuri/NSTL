@@ -16,12 +16,16 @@ class uptr {
         bool operator==(std::nullptr_t p) const { return raw_ptr_ == p; }
         ~uptr();
         T& operator*() { return *raw_ptr_; }
+        T& operator[](size_t idx) { return raw_ptr_[idx]; }
+        const T& operator[](size_t idx) const { return raw_ptr_[idx]; }
         T* operator->() { return raw_ptr_; }
         T* get() { return raw_ptr_; }
         const T* get() const { return raw_ptr_; }
+        void reset();
     private:
         T* raw_ptr_;
         bool is_array_{false};
+        void free();
 };
 
 template <typename T>
@@ -41,6 +45,16 @@ uptr<T>& uptr<T>::operator=(uptr<T>&& other) {
 
 template <typename T>
 uptr<T>::~uptr() {
+    free();
+}
+
+template <typename T>
+void uptr<T>::reset() {
+    free();
+}
+
+template <typename T>
+inline void uptr<T>::free() {
     if (raw_ptr_ != nullptr) {
         if (!is_array_) {
             delete raw_ptr_;
@@ -60,26 +74,35 @@ inline void ensure_alloc(T* raw_ptr) {
 }
 
 template <typename T, typename... Args>
-auto make_uptr(Args&&... args) {
-    if constexpr(!std::is_array_v<T>) {
-        T* raw_ptr = new T(std::forward<Args>(args)...);
-        ensure_alloc(raw_ptr);
-        return uptr<T>(raw_ptr);
-    }
-    else {
-        if (sizeof...(args) > 0) {
-            auto raw_ptr = new std::remove_extent_t<T>[] {args...};
-            ensure_alloc(raw_ptr);
-            return uptr<std::remove_extent_t<T>>(raw_ptr, true);
-        }
-        else {
-            auto raw_ptr = new std::remove_extent_t<T>[std::extent_v<T>];
-            ensure_alloc(raw_ptr);
-            return uptr<std::remove_extent_t<T>>(raw_ptr, true);
-            }
-    }
+uptr<T> make_uptr(Args&&... args) {
+    static_assert(!std::is_array_v<T>, "T[] only supported with a single arg for size");
+    T* raw_ptr = new T(std::forward<Args>(args)...);
+    ensure_alloc(raw_ptr);
+    return uptr<T>(raw_ptr);
 }
 
+template <typename T>
+auto make_uptr(size_t N) {
+    if constexpr(!std::is_array_v<T>) {
+        return uptr<T>(new T(std::forward<int>(N)));
+    }
+    auto raw_ptr = new std::remove_extent_t<T>[N];
+    ensure_alloc(raw_ptr);
+    return uptr<std::remove_extent_t<T>>(raw_ptr, true);
+}
+
+template <typename T>
+auto make_uptr(int N) {
+    if constexpr(!std::is_array_v<T>) {
+        return uptr<T>(new T(std::forward<int>(N)));
+    }
+    if (N < 0) {
+        throw std::bad_array_new_length();
+    }
+    auto raw_ptr = new std::remove_extent_t<T>[N];
+    ensure_alloc(raw_ptr);
+    return uptr<std::remove_extent_t<T>>(raw_ptr, true);
+}
 
 } // namespace nstd
 

@@ -30,11 +30,14 @@ TEST(InitTests, MakeUptrIntWorks) {
 }
 
 TEST(InitTests, MakeUptrIntArrayWorks) {
-    auto p = nstd::make_uptr<int[]>(3,4,5);
+    auto p = nstd::make_uptr<int[]>(3);
+    p[0] = 3;
+    p[1] = 4;
+    p[2] = 5;
     ASSERT_EQ(*p, 3);
-    ASSERT_EQ(p.get()[0], 3);
-    ASSERT_EQ(p.get()[1], 4);
-    ASSERT_EQ(p.get()[2], 5);
+    ASSERT_EQ(p[0], 3);
+    ASSERT_EQ(p[1], 4);
+    ASSERT_EQ(p[2], 5);
 }
 
 struct TestObj {
@@ -45,10 +48,10 @@ struct TestObj {
 };
 
 TEST(InitTests, MakeUptrTArrayWorks) {
-    auto p = nstd::make_uptr<TestObj[3]>();
-    ASSERT_EQ(p.get()[0].test(), 7);
-    ASSERT_EQ(p.get()[1].test(), 7);
-    ASSERT_EQ(p.get()[2].test(), 7);
+    auto p = nstd::make_uptr<TestObj[]>(3);
+    ASSERT_EQ(p[0].test(), 7);
+    ASSERT_EQ(p[1].test(), 7);
+    ASSERT_EQ(p[2].test(), 7);
 }
 
 TEST(InitTests, MemberAccessWorks) {

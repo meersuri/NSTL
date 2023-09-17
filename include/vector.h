@@ -1,7 +1,8 @@
 #include <iostream>
 #include <string>
-#include <memory>
 #include <sstream>
+
+#include "uptr.h"
 
 #ifndef INCLUDE_VECTOR_H
 #define INCLUDE_VECTOR_H
@@ -12,26 +13,24 @@ template<typename T>
 class vector {
     size_t _size;
     size_t _capacity;
-    std::unique_ptr<T[]> _data;
+    nstd::uptr<T> _data;
     public:
-        vector<T>(): _size(0), _capacity(1),  _data(nullptr) { _data = std::make_unique<T[]>(1); }
-        vector<T>(size_t n): _size(n), _capacity(n), _data(nullptr) { _data = std::make_unique<T[]>(n); }
+        vector<T>(): _size(0), _capacity(1),  _data(nullptr) { _data = nstd::make_uptr<T[]>(1); }
+        vector<T>(size_t n): _size(n), _capacity(n), _data(nullptr) { _data = nstd::make_uptr<T[]>(n); }
         vector<T>(size_t n, const T &item);
         vector<T>(const vector<T> &other);
+//        vector<T>(const std::initializer_list<T> elements): _size(elements.size()), _capacity(elements.size(), _data(nullptr) { _data = u
         vector<T>(vector<T> &&other) noexcept;
         void append(const T &item);
         size_t size() const { return _size; }
         size_t capacity() const { return _capacity; }
-        T &operator[](size_t idx);
-        const T &operator[](size_t idx) const;
         T &operator[](int idx);
         const T &operator[](int idx) const;
-        T& _index_op(int idx) const;
 };
 
 template<typename T>
 nstd::vector<T>::vector(size_t n, const T &item): _size(n), _capacity(n), _data(nullptr) {
-    _data = std::make_unique<T[]>(n);
+    _data = nstd::make_uptr<T[]>(n);
     for (int i = 0; i < n; ++i) {
         _data[i] = item;
     }
@@ -44,7 +43,7 @@ void nstd::vector<T>::append(const T &item) {
         return;
     }
     _capacity *= 2;
-    auto _new_data = std::make_unique<T[]>(_capacity);
+    auto _new_data = nstd::make_uptr<T[]>(_capacity);
     std::copy(_data.get(), _data.get() + _size, _new_data.get());
     _data.reset();
     _data = std::move(_new_data);
@@ -53,29 +52,20 @@ void nstd::vector<T>::append(const T &item) {
         
 template<typename T>
 T& nstd::vector<T>::operator[](int idx) {
-    return _index_op(idx);
+    if (idx > _size || idx < 0) {
+        std::stringstream ss;
+        ss << "idx: " << std::to_string(idx) << " is out of range for size of "
+            << std::to_string(_size);
+        throw std::out_of_range(ss.str());
+    }
+    return _data[idx];
 }
 
 template<typename T>
 const T& nstd::vector<T>::operator[](int idx) const {
-    return _index_op(idx);
-}
-
-template<typename T>
-T& nstd::vector<T>::operator[](size_t idx) {
-    return _index_op(static_cast<int>(idx));
-}
-
-template<typename T>
-const T& nstd::vector<T>::operator[](size_t idx) const {
-    return _index_op(static_cast<int>(idx));
-}
-
-template<typename T>
-T& nstd::vector<T>::_index_op(int idx) const {
     if (idx > _size || idx < 0) {
         std::stringstream ss;
-        ss << "idx: " << std::to_string(idx) << " is out of range for size of " 
+        ss << "idx: " << std::to_string(idx) << " is out of range for size of "
             << std::to_string(_size);
         throw std::out_of_range(ss.str());
     }
@@ -84,7 +74,7 @@ T& nstd::vector<T>::_index_op(int idx) const {
 
 template<typename T>
 nstd::vector<T>::vector(const vector<T> &other): _size(other._size), _capacity(other._capacity), _data(nullptr) {
-    _data = std::make_unique<T[]>(_capacity);
+    _data = nstd::make_uptr<T[]>(_capacity);
     std::copy(other._data.get(), other._data.get() + other._capacity, _data.get());
 }
 

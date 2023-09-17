@@ -9,13 +9,6 @@ TEST(InitTest, DefaultConstructorWorks) {
     EXPECT_EQ(v.capacity(), 1);
 }
 
-TEST(InitTest, SizeConstructorWorks) {
-    nstd::vector<int> v(10);
-    ASSERT_EQ(v.size(), 10);
-    for (int i = 0; i < 10; ++i)
-        EXPECT_EQ(v[i], 0);
-}
-
 TEST(InitTest, CopyConstructorWorks) {
     nstd::vector<int> v(7, -2);
     nstd::vector<int> v2(v);

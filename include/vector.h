@@ -19,7 +19,6 @@ class vector {
         vector<T>(size_t n): _size(n), _capacity(n), _data(nullptr) { _data = nstd::make_uptr<T[]>(n); }
         vector<T>(size_t n, const T &item);
         vector<T>(const vector<T> &other);
-//        vector<T>(const std::initializer_list<T> elements): _size(elements.size()), _capacity(elements.size(), _data(nullptr) { _data = u
         vector<T>(vector<T> &&other) noexcept;
         void append(const T &item);
         size_t size() const { return _size; }

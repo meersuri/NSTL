@@ -11,8 +11,8 @@ class uptr {
         uptr(T* raw_ptr, bool is_array): raw_ptr_(raw_ptr), is_array_(is_array) {}
         uptr(const uptr<T>& other) = delete;
         uptr<T> operator=(const uptr<T>& other) = delete;
-        uptr(uptr<T>&& other);
-        uptr<T>& operator=(uptr<T>&& other);
+        uptr(uptr<T>&& other) noexcept;
+        uptr<T>& operator=(uptr<T>&& other) noexcept;
         bool operator==(std::nullptr_t p) const { return raw_ptr_ == p; }
         ~uptr();
         T& operator*() { return *raw_ptr_; }
@@ -29,13 +29,13 @@ class uptr {
 };
 
 template <typename T>
-uptr<T>::uptr(uptr<T>&& other) {
+uptr<T>::uptr(uptr<T>&& other) noexcept {
     raw_ptr_ = other.raw_ptr_;
     other.raw_ptr_ = nullptr;
 }
 
 template <typename T>
-uptr<T>& uptr<T>::operator=(uptr<T>&& other) {
+uptr<T>& uptr<T>::operator=(uptr<T>&& other) noexcept {
     if (this != &other) {
         raw_ptr_ = other.raw_ptr_;
         other.raw_ptr_ = nullptr;

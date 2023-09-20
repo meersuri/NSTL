@@ -118,9 +118,32 @@ sptr<T>::~sptr() {
 
 template <typename T, typename... Args>
 sptr<T> make_sptr(Args&&... args) {
-    static_assert(!std::is_array_v<T>, "T[] not supported");
+    if (std::is_array_v<T> && sizeof...(args) != 1) {
+        throw std::logic_error("T[] only supported with a single parameter for size");
+    }
     T* raw_ptr = new T(std::forward<Args>(args)...);
     return sptr<T>(raw_ptr);
+}
+
+template <typename T>
+inline void check_new(T* raw_ptr) {
+    if (raw_ptr == nullptr) {
+        throw std::bad_alloc();
+    }
+}
+
+template <typename T>
+auto make_sptr(int N) {
+    if constexpr (std::is_array_v<T>) {
+        auto raw_ptr = new std::remove_extent_t<T>[N];
+        check_new(raw_ptr);
+        return sptr<std::remove_extent_t<T>>(raw_ptr);
+    }
+    else {
+        T* raw_ptr = new T(std::forward<int>(N));
+        check_new(raw_ptr);
+        return sptr<T>(raw_ptr);
+    }
 }
 
 } // namespace nstd

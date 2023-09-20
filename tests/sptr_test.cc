@@ -10,6 +10,16 @@ TEST(InitTests, MakeSharedIntWorks) {
     ASSERT_EQ(p.ref_count(), 1);
 }
 
+TEST(InitTests, MakeSharedIntArrayWorks) {
+    nstd::sptr<int> p = nstd::make_sptr<int[]>(3);
+    p.get()[0] = 1;
+    p.get()[1] = 2;
+    p.get()[2] = 3;
+    ASSERT_EQ(*p, 1);
+    ASSERT_EQ(p.get()[1], 2);
+    ASSERT_EQ(p.get()[2], 3);
+    ASSERT_EQ(p.ref_count(), 1);
+}
 
 TEST(InitTests, CopyConstructorWorks) {
     nstd::sptr<int> p = nstd::make_sptr<int>(5);
